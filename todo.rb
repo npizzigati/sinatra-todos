@@ -6,12 +6,12 @@ require 'tilt/erubis'
 configure do
   enable :sessions
   set :session_secret, 'secret'
-  set :erb, :escape_html => true
+  set :erb, escape_html: true
 end
 
 helpers do
   def list_complete?(list)
-    todos_count(list) > 0 && todos_remaining_count(list) == 0
+    todos_count(list).positive? && todos_remaining_count(list).zero?
   end
 
   def list_class(list)
@@ -42,7 +42,7 @@ helpers do
 end
 
 def load_list(id)
-  list = session[:lists].find{ |list| list[:id] == id }
+  list = session[:lists].find { |candidate| candidate[:id] == id }
   return list if list
 
   session[:error] = 'The specified list was not found.'
@@ -61,9 +61,9 @@ end
 
 # Return an error message if the name is invalid. Return nil if name is valid.
 def error_for_todo(name)
-  if !(1..100).cover? name.size
-    'Todo must be between 1 and 100 characters.'
-  end
+  return if (1..100).cover? name.size
+
+  'Todo must be between 1 and 100 characters.'
 end
 
 def next_element_id(elements)
@@ -190,7 +190,7 @@ post '/lists/:list_id/todos/:id' do
 
   todo_id = params[:id].to_i
   is_completed = params[:completed] == 'true'
-  todo = @list[:todos].find { |todo| todo[:id] == todo_id }
+  todo = @list[:todos].find { |candidate| candidate[:id] == todo_id }
   todo[:completed] = is_completed
 
   session[:success] = 'The todo has been updated.'
