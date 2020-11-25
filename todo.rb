@@ -141,10 +141,11 @@ end
 post '/lists/:id/destroy' do
   id = params[:id].to_i
   session[:lists].reject! { |list| list[:id] == id }
-  session[:success] = 'The list has been deleted.'
+
   if env['HTTP_X_REQUESTED_WITH'] == 'XMLHttpRequest'
-    '/lists'
+    'list'
   else
+    session[:success] = 'The list has been deleted.'
     redirect '/lists'
   end
 end
@@ -176,7 +177,7 @@ post '/lists/:list_id/todos/:id/destroy' do
   todo_id = params[:id].to_i
   @list[:todos].reject! { |todo| todo[:id] == todo_id }
   if env['HTTP_X_REQUESTED_WITH'] == 'XMLHttpRequest'
-    status 204
+    'item'
   else
     session[:success] = 'The todo has been deleted.'
     redirect "/lists/#{@list_id}"
